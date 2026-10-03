@@ -45,24 +45,23 @@ properties to drive the debug switches.
 
 - **Fixed-function pipeline in one shader:** pre-transformed (`XYZRHW`) and
   transformed vertices, world/view/projection, two texture stages with the common
-  `D3DTOP_*`/`D3DTA_*` ops, texture coordinate generation (camera-space position
-  and normal) and texture transforms, per-vertex lighting (directional and point
-  lights, materials), linear fog, alpha test, and alpha blending.
+  `D3DTOP_*`/`D3DTA_*` ops and `TFACTOR`, texture coordinate generation and
+  texture transforms, per-vertex lighting (two lights, materials and
+  material-source states), fog (linear, exp, exp2), alpha test, alpha blending.
 - **FVF vertex layouts:** XYZ/XYZRHW, normal, diffuse, specular, up to two sets of
   texture coordinates.
-- **Resources:** textures (A8R8G8B8, X8R8G8B8, R5G6B5, A4R4G4B4, A1R5G5B5,
-  DXT1/3/5 where the GL supports them, A8/L8), `LockRect`/`UnlockRect`, vertex
-  and index buffers (VBO/IBO), render-target textures through FBOs, and depth
-  surfaces.
-- **Render state:** z test/write, cull mode, blend factors, fill mode, viewport,
-  scissor, and clear.
+- **Resources:** textures (A8R8G8B8, X8R8G8B8, R5G6B5, X1R5G5B5, A1R5G5B5,
+  A4R4G4B4) with `LockRect`/`UnlockRect`, vertex and index buffers (VBO/IBO),
+  render-target textures through FBOs, and depth surfaces.
+- **Render state:** z test/write, cull mode, blend factors, viewport, clear.
 - **D3DX:** the matrix, vector, plane and quaternion helpers the clients use,
   with D3DX semantics (row vectors, left-handed projection helpers).
 
 Not implemented: programmable vertex/pixel shaders (`CreateVertexShader` returns
-a dummy handle), more than two texture stages, volume and cube textures, stencil
-operations, `D3DXCreateSphere`-style mesh generation (returns empty meshes), and
-multithreaded device use.
+a dummy handle), more than two texture stages or lights, volume and cube
+textures, compressed texture formats (decode DDS before upload), stencil, fill
+mode and scissor states, D3DX mesh generation (`D3DXCreateSphere` returns an
+empty mesh), and multithreaded device use.
 
 This list reflects what the Metin2 client needs. Other games will hit gaps; the
 debug dump shows which states a draw uses.
