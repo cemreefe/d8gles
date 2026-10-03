@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/logo.png" width="160" alt="d8gles logo: a pixel 8 made of triangles on a CRT screen"></p>
+
 # d8gles
 
 The Direct3D 8 / D3DX 8 API used by early-2000s game clients, implemented on
@@ -7,6 +9,11 @@ turns them into GL calls and a generated fixed-function shader.
 
 It was split out of the [Metin2 Android port](https://github.com/cemreefe/metin2-android),
 where it renders terrain, water, characters, effects and the whole 2D UI.
+
+<p align="center"><img src="docs/demo.gif" width="320" alt="Spinning cube rendered through the D3D8 API by d8gles"></p>
+
+The cube above is `examples/spinning_cube.cpp`: plain D3D8 calls, rendered
+headlessly on Mesa through EGL. See [Example](#example).
 
 ## Layering
 
@@ -55,7 +62,8 @@ properties to drive the debug switches.
   render-target textures through FBOs, and depth surfaces.
 - **Render state:** z test/write, cull mode, blend factors, viewport, clear.
 - **D3DX:** the matrix, vector, plane and quaternion helpers the clients use,
-  with D3DX semantics (row vectors, left-handed projection helpers).
+  with D3DX semantics (row vectors; the look-at and projection helpers are the
+  right-handed `...RH` variants).
 
 Not implemented: programmable vertex/pixel shaders (`CreateVertexShader` returns
 a dummy handle), more than two texture stages or lights, volume and cube
@@ -87,6 +95,40 @@ If your project already has its own Win32 type shim (`GUID`, `LARGE_INTEGER`,
 The test (`tests/render_test.cpp`) creates a 64x64 EGL pbuffer, clears it blue,
 draws an `XYZRHW | DIFFUSE` triangle through the D3D8 API, and checks the pixels.
 It is skipped (exit 77) when no GLES 3 EGL context is available.
+
+## Example
+
+`examples/spinning_cube.cpp` uses only the D3D8 API: a vertex buffer with
+`D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1`, a texture filled through `LockRect`,
+D3DX matrices, a directional light on the floor, and linear fog.
+
+```cpp
+dev->CreateTexture(16, 16, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex);
+tex->LockRect(0, &lr, 0, 0);  /* write texels */  tex->UnlockRect(0);
+
+dev->CreateVertexBuffer(36 * sizeof(CubeVertex), 0, CUBE_FVF, D3DPOOL_MANAGED, &vb);
+vb->Lock(0, 0, (BYTE**)&v, 0);  /* write vertices */  vb->Unlock();
+
+D3DXMatrixRotationY(&ry, t);
+D3DXMatrixMultiply(&world, &ry, &rx);
+dev->SetTransform(D3DTS_WORLD, &world);
+dev->SetRenderState(D3DRS_FOGTABLEMODE, D3DFOG_LINEAR);
+dev->SetTexture(0, tex);
+dev->SetStreamSource(0, vb, sizeof(CubeVertex));
+dev->SetVertexShader(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+dev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 12);
+```
+
+```sh
+cmake -S . -B build -DD8GLES_BUILD_EXAMPLES=ON && cmake --build build -j
+mkdir -p frames && EGL_PLATFORM=surfaceless build/spinning_cube frames 60
+ffmpeg -framerate 20 -i frames/frame_%03d.ppm -vf scale=320:-1 demo.gif
+```
+
+Without arguments it renders one frame and checks it; that is the
+`spinning_cube` CTest smoke test.
+
+![Spinning cube still](docs/demo.png)
 
 ## Provenance
 
