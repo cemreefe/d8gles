@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/logo.png" width="160" alt="d8gles logo: a pixel 8 made of triangles on a CRT screen"></p>
+<p align="center"><img src="docs/logo.svg" width="320" alt="d8gles logo: a green perspective tunnel leading into the d8gles wordmark"></p>
 
 # d8gles
 
